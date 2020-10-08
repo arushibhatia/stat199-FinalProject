@@ -1,0 +1,12 @@
+---
+title: "Final Project - STA 199"
+subtitle: "due Friday, Nov 20 at 11:59p"
+author: "Ten Out of Ten: Arushi Bhatia, Luke Vermeer, Kevin Wang, Lauren May"
+output: pdf_document
+---
+
+```{r packages-data, warning=FALSE, message=FALSE}
+library(tidyverse)
+trumpTweets <- read_csv("data/trumpTweetCSV.csv") 
+glimpse(trumpTweets)
+```
