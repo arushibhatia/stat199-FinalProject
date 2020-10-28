@@ -246,14 +246,35 @@ trumpTweets$element_id <- 1:nrow(trumpTweets)
 ```
 
 
-```{r}
+```{r creatingSentimentDataset}
 trumpTweetsSentiment <- sentiment_by(trumpTweets$text)
-
 tweetsWithSentiment <- left_join(trumpTweets, trumpTweetsSentiment, 
                                  by = "element_id")
 
 ```
 
+```{r}
+tweetsWithSentiment <- tweetsWithSentiment %>% mutate(posNeg = 
+                           if_else(ave_sentiment>0, "positive", "negative"))
+view(tweetsWithSentiment)
+obama <- tweetsWithSentiment %>% filter(obama==1)
+ggplot(data=obama, mapping= aes(x=posNeg)) + geom_bar()
+
+biden <- tweetsWithSentiment %>% filter(biden==1)
+ggplot(data=biden, mapping= aes(x=posNeg)) + geom_bar()
+
+kamala <- tweetsWithSentiment %>% filter(kamala==1)
+ggplot(data=kamala, mapping= aes(x=posNeg)) + geom_bar()
+
+aoc <- tweetsWithSentiment %>% filter(aoc==1)
+ggplot(data=aoc, mapping= aes(x=posNeg)) + geom_bar()
+
+pence <- tweetsWithSentiment %>% filter(pence==1)
+ggplot(data=pence, mapping= aes(x=posNeg)) + geom_bar()
+
+amy <- tweetsWithSentiment %>% filter(amy==1)
+ggplot(data=amy, mapping= aes(x=posNeg)) + geom_bar()
+```
 
 
 
