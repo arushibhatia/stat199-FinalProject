@@ -4,6 +4,16 @@ subtitle: "due Friday, Oct 9 at 11:59p"
 author: "Ten Out of Ten: Arushi Bhatia, Luke Vermeer, Kevin Wang, Lauren May"
 output: pdf_document
 ---
+
+```{r}
+library(tidyverse)
+library(tidytext)
+library(genius) # https://github.com/JosiahParry/genius
+library(wordcloud)
+library(reshape2)
+library(sentimentr)
+```
+
 ### Introduction
 Relative to other forms of media, social media plays a much greater role in how 
 people consume news in today’s technology-driven society. A study conducted in 
@@ -231,20 +241,12 @@ trumpTweets <- trumpTweets %>%
                             TRUE ~0))
 ```
 
-```{r}
-
-install.packages("plyr")
-install.packages("stringr")
-install.packages("NLP")
-install.packages("rJava")
-install.packages("openNLP")
-install.packages("RSentiment")
-library(RSentiment)
-
-```
 
 ```{r}
-trumpTweets <- trumpTweets %>% mutate(score = calculate_score(text))
+
+trumpTweetsSentiment <- trumpTweets %>% select(text) %>% get_sentences() %>% sentiment()
+trumpTweetsSentiment %>% arrange(desc(sentiment))
+view(trumpTweetsSentiment)
 ```
 
 
