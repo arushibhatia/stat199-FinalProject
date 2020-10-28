@@ -239,14 +239,19 @@ trumpTweets <- trumpTweets %>%
                         grepl("border patrol", text , ignore.case = TRUE)|
                         grepl("cages", text , ignore.case = TRUE)) ~ 1,
                             TRUE ~0))
+
+
+trumpTweets$element_id <- 1:nrow(trumpTweets) 
+
 ```
 
 
 ```{r}
+trumpTweetsSentiment <- sentiment_by(trumpTweets$text)
 
-trumpTweetsSentiment <- trumpTweets %>% select(text) %>% get_sentences() %>% sentiment()
-trumpTweetsSentiment %>% arrange(desc(sentiment))
-view(trumpTweetsSentiment)
+tweetsWithSentiment <- left_join(trumpTweets, trumpTweetsSentiment, 
+                                 by = "element_id")
+
 ```
 
 
