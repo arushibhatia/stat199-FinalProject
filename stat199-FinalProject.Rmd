@@ -6,6 +6,13 @@ output: pdf_document
 ---
 
 ```{r}
+install.packages("viridis")
+install.packages("tidyverse")
+install.packages("tidytext")
+install.packages("wordcloud")
+install.packages("reshape2")
+install.packages("sentimentr")
+library(viridis)
 library(tidyverse)
 library(tidytext)
 library(wordcloud)
@@ -132,6 +139,12 @@ trumpTweets <- trumpTweets %>%
    mutate(pence = case_when((grepl("Pence", text , ignore.case = TRUE)) ~ 1,
                             TRUE ~0))
 
+trumpTweets <- trumpTweets %>%  
+   mutate(nikki = case_when((grepl("Nikki Haley", text , ignore.case = TRUE)| 
+                              grepl("Nikki", text , ignore.case = TRUE)) ~ 1,
+                            TRUE ~0))
+trumpTweets %>% filter(nikki==1)
+
 
 trumpTweets <- trumpTweets %>%  
   mutate(mcconnell = case_when(((grepl("McConnell", text , ignore.case = TRUE) | 
@@ -257,39 +270,58 @@ tweetsWithSentimentWithoutLink <- tweetsWithSentiment %>%
   filter(!grepl("^https*", text))
 ```
 
-```{r}
-view(tweetsWithSentimentWithoutLink)
-
-obama <- tweetsWithSentimentWithoutLink %>% filter(obama==1)
-ggplot(data=obama, mapping= aes(x=posNeg)) + geom_bar()
-
-biden <- tweetsWithSentimentWithoutLink %>% filter(biden==1)
-ggplot(data=biden, mapping= aes(x=posNeg)) + geom_bar()
-
-kamala <- tweetsWithSentimentWithoutLink %>% filter(kamala==1)
-ggplot(data=kamala, mapping= aes(x=posNeg)) + geom_bar()
-
-aoc <- tweetsWithSentimentWithoutLink %>% filter(aoc==1)
-ggplot(data=aoc, mapping= aes(x=posNeg)) + geom_bar()
-
-pence <- tweetsWithSentimentWithoutLink %>% filter(pence==1)
-ggplot(data=pence, mapping= aes(x=posNeg)) + geom_bar()
-
-amy <- tweetsWithSentimentWithoutLink %>% filter(amy==1)
-ggplot(data=amy, mapping= aes(x=posNeg)) + geom_bar()
-```
 
 ```{r creatingNewDataFrameWithPeople}
+tweetsWithSentimentWithoutLink
 peopleData <- tweetsWithSentimentWithoutLink %>%
   pivot_longer(obama:amy, names_to = "person", values_to = "existenceOfPerson")
 
-view(peopleData)
 peopleData <- peopleData %>% filter(existenceOfPerson==1)
 
 ggplot(data=peopleData, aes(x=person, fill = factor(posNeg))) +
-  geom_bar(position = "fill")
+  geom_bar(position = "fill") + 
+  labs(title="Least proportion of Tweets with negative sentiment about 
+       Amy Coney Barrett and Mike Pence",
+                  x="Politician",y ="Percentage of Tweets", fill="Sentiment")
 ```
 
+```{r democraticSentiment}
+tweetsWithSentimentWithoutLink <- tweetsWithSentimentWithoutLink %>% 
+   mutate(gender=case_when((tweetsWithSentimentWithoutLink$obama == 1 |
+               tweetsWithSentimentWithoutLink$biden == 1|
+               tweetsWithSentimentWithoutLink$pence == 1|
+               tweetsWithSentimentWithoutLink$fauci == 1 | 
+               tweetsWithSentimentWithoutLink$mcconnell == 1) ~ "Male",
+               (tweetsWithSentimentWithoutLink$kamala == 1 |
+                   tweetsWithSentimentWithoutLink$pelosi == 1 |
+                   tweetsWithSentimentWithoutLink$aoc == 1|
+                   tweetsWithSentimentWithoutLink$amy == 1 |
+                   tweetsWithSentimentWithoutLink$nikki == 1 |
+                  tweetsWithSentimentWithoutLink$hillary == 1) ~ "Female"))
+
+
+tweetsWithSentimentWithoutLink <- tweetsWithSentimentWithoutLink %>%
+   mutate(gender = factor(gender))
+
+genderDemocrats <- tweetsWithSentimentWithoutLink %>% 
+   filter(gender=="Male" | gender =="Female") %>%
+   filter(obama == 1 | biden ==1 | kamala==1 | pelosi ==1 | aoc ==1 | hillary ==1)
+ggplot(data = genderDemocrats, mapping = aes(y = ave_sentiment, x = gender, color=gender)) +
+   geom_boxplot() +
+   labs(title = "Sentiment scores are roughly the same, with more range for male politicians",
+        subtitle="Democratic politicians only",
+x = "Gender", y = "Sentiment Score")
+
+genderRepublicans<- tweetsWithSentimentWithoutLink %>% 
+   filter(gender=="Male" | gender =="Female") %>%
+   filter(pence == 1 | mcconnell ==1 | amy==1 | nikki==1)
+ggplot(data = genderRepublicans, mapping= aes(y = ave_sentiment, x = gender, color=gender)) +
+   geom_boxplot() +
+   labs(title = "Higher overall sentiment scores for female republicans",
+        subtitle="Republican politicians only",
+x = "Gender", y = "Sentiment Score")
+
+```
 
 
 
