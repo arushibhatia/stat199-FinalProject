@@ -8,7 +8,6 @@ output: pdf_document
 ```{r}
 library(tidyverse)
 library(tidytext)
-library(genius) # https://github.com/JosiahParry/genius
 library(wordcloud)
 library(reshape2)
 library(sentimentr)
@@ -192,8 +191,7 @@ trumpTweets <- trumpTweets %>%
    mutate(blm = case_when((grepl("BLM", text , ignore.case = TRUE) | 
                        grepl("Black lives matter", text , ignore.case = TRUE) |
                       grepl("loot", text , ignore.case = TRUE) |
-                        grepl("riot", text , ignore.case = TRUE) |
-                        grepl("pigs", text , ignore.case = TRUE)) ~ 1,
+                        grepl("riot", text , ignore.case = TRUE)) ~ 1,
                             TRUE ~0))
 
 trumpTweets <- trumpTweets %>%  
@@ -205,12 +203,10 @@ trumpTweets <- trumpTweets %>%
                             TRUE ~0))
 
 trumpTweets <- trumpTweets %>%  
-   mutate(news = case_when((grepl("news", text , ignore.case = TRUE) | 
-                              grepl("fake news", text , ignore.case = TRUE) |
+   mutate(news = case_when((grepl("news", text , ignore.case = TRUE) |
                       grepl("CNN", text , ignore.case = TRUE) |
                         grepl("Fox", text , ignore.case = TRUE) |
-                        grepl("media", text , ignore.case = TRUE) |
-                        grepl("fake media", text , ignore.case = TRUE)) ~ 1,
+                        grepl("media", text , ignore.case = TRUE)) ~ 1,
                             TRUE ~0))
 
 trumpTweets <- trumpTweets %>%  
@@ -243,6 +239,7 @@ trumpTweets <- trumpTweets %>%
 
 trumpTweets$element_id <- 1:nrow(trumpTweets) 
 
+
 ```
 
 
@@ -251,30 +248,48 @@ trumpTweetsSentiment <- sentiment_by(trumpTweets$text)
 tweetsWithSentiment <- left_join(trumpTweets, trumpTweetsSentiment, 
                                  by = "element_id")
 
+
+tweetsWithSentiment <- tweetsWithSentiment %>% mutate(posNeg = case_when(ave_sentiment>0 ~ "positive", ave_sentiment<0 ~ "negative", ave_sentiment ==0 ~ "neutral"
+))
+            
+
+tweetsWithSentimentWithoutLink <- tweetsWithSentiment %>% 
+  filter(!grepl("^https*", text))
 ```
 
 ```{r}
-tweetsWithSentiment <- tweetsWithSentiment %>% mutate(posNeg = 
-                           if_else(ave_sentiment>0, "positive", "negative"))
-view(tweetsWithSentiment)
-obama <- tweetsWithSentiment %>% filter(obama==1)
+view(tweetsWithSentimentWithoutLink)
+
+obama <- tweetsWithSentimentWithoutLink %>% filter(obama==1)
 ggplot(data=obama, mapping= aes(x=posNeg)) + geom_bar()
 
-biden <- tweetsWithSentiment %>% filter(biden==1)
+biden <- tweetsWithSentimentWithoutLink %>% filter(biden==1)
 ggplot(data=biden, mapping= aes(x=posNeg)) + geom_bar()
 
-kamala <- tweetsWithSentiment %>% filter(kamala==1)
+kamala <- tweetsWithSentimentWithoutLink %>% filter(kamala==1)
 ggplot(data=kamala, mapping= aes(x=posNeg)) + geom_bar()
 
-aoc <- tweetsWithSentiment %>% filter(aoc==1)
+aoc <- tweetsWithSentimentWithoutLink %>% filter(aoc==1)
 ggplot(data=aoc, mapping= aes(x=posNeg)) + geom_bar()
 
-pence <- tweetsWithSentiment %>% filter(pence==1)
+pence <- tweetsWithSentimentWithoutLink %>% filter(pence==1)
 ggplot(data=pence, mapping= aes(x=posNeg)) + geom_bar()
 
-amy <- tweetsWithSentiment %>% filter(amy==1)
+amy <- tweetsWithSentimentWithoutLink %>% filter(amy==1)
 ggplot(data=amy, mapping= aes(x=posNeg)) + geom_bar()
 ```
+
+```{r creatingNewDataFrameWithPeople}
+peopleData <- tweetsWithSentimentWithoutLink %>%
+  pivot_longer(obama:amy, names_to = "person", values_to = "existenceOfPerson")
+
+view(peopleData)
+peopleData <- peopleData %>% filter(existenceOfPerson==1)
+
+ggplot(data=peopleData, aes(x=person, fill = factor(posNeg))) +
+  geom_bar(position = "fill")
+```
+
 
 
 
