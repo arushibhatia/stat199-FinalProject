@@ -5,7 +5,11 @@ author: "Ten Out of Ten: Arushi Bhatia, Luke Vermeer, Kevin Wang, Lauren May"
 output: pdf_document
 ---
 
-```{r}
+```{r installingPackages}
+r = getOption("repos")
+r["CRAN"] = "http://cran.us.r-project.org"
+options(repos = r)
+
 install.packages("viridis")
 install.packages("stopwords")
 install.packages("tidyverse")
@@ -252,7 +256,7 @@ trumpTweets$element_id <- 1:nrow(trumpTweets)
 ```
 
 
-```{r creatingSentimentDataset, warning=FALSE}
+```{r creatingSentimentDataset, message=FALSE}
 trumpTweetsSentiment <- sentiment_by(trumpTweets$text)
 tweetsWithSentiment <- left_join(trumpTweets, trumpTweetsSentiment, 
                                  by = "element_id")
@@ -265,7 +269,7 @@ tweetsWithSentiment <- tweetsWithSentiment %>%
 tweetsWithSentimentWithoutLink <- tweetsWithSentiment %>% 
   filter(!grepl("^https*", text))
 ```
-```{r wordCloud, warning=FALSE}
+```{r wordCloud, message=FALSE, echo=FALSE}
 justWords <- tweetsWithSentimentWithoutLink %>%
   unnest_tokens(word, text)
 
@@ -274,9 +278,34 @@ freqWords <- justWords %>%
   count(word) %>%
   arrange(desc(n)) %>% 
    filter(!(word=="t.co" | word=="realdonaldtrump"| word=="https" | word=="rt"| 
-             word=="amp" | word=="http" | word =="10" | word=="2015"))
-freqWords %>% with(wordcloud(word, n, max.words = 100))
+      word=="amp" | word=="http" | word =="10" | word=="2015" | word=="2016"))
+wordCloud <- freqWords %>% with(wordcloud(word, n, max.words = 100))
 ```
+
+Figure 1: Word cloud of the top 100 words Donald Trump uses in his Tweets. Some
+of the words that were not part of the actual text of the Tweet or were
+artifacts of Tweets (such as URLs, account names, and years) were removed to 
+clean the data.
+
+```{r wordFreqGraph, message=FALSE, echo=FALSE}
+freqChart <- freqWords %>%
+  top_n(20) %>%
+  ggplot(aes(fct_reorder(word, n), n)) +
+    geom_col() +
+    coord_flip() + 
+    theme_minimal() +
+    labs(title = "Frequency of words in Donald Trump's Tweets",
+         subtitle = "Top 20 word displayed",
+         y = "Frequency",
+         x = "Words")
+
+freqChart
+```
+
+Figure 2: Frequency of Donald Trump's top 20 words that are used in his Tweets.
+Just like in Figure 1, some of the words that were not part of the actual text 
+of the Tweet or were artifacts of Tweets (such as URLs, account names, and 
+years) were removed to clean the data.
 
 ```{r creatingNewDataFrameWithPeople}
 
@@ -289,8 +318,14 @@ ggplot(data=peopleData, aes(x=person, fill = factor(posNeg))) +
   geom_bar(position = "fill") + 
   labs(title="Lowest proportion of Tweets with negative sentiment were Tweets
   mentioning Amy Coney Barrett and Mike Pence",
-                  x="Politician",y ="Percentage of Tweets", fill="Sentiment")
+                  x="Politician",y ="Percentage of Tweets", fill="Sentiment") + 
+   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
+```
+Figure 3: Illustrates the proportion of Tweets with average negative (<0), 
+neutral (=0), and positive (>0) sentiment that mention a specific politician.
+
+```{r partyAndGender}
 peopleData <- peopleData %>% 
    mutate(party=case_when((person == "obama" |
                person == "biden"|
@@ -325,10 +360,15 @@ labs(title = "Overall more positive sentiment in Tweets mentioning Republicans",
    generally higher sentiment for Republican females vs. males",
         x = "Party", y = "Tweet Average Sentiment Score") + 
    geom_hline(yintercept=0, linetype="dashed", color = "red")
-
 ```
 
-```{r}
+Figure 4: Boxplot showing the average sentiment scores for Tweets, divided by
+political party of the person mentioned in the Tweet, and split within
+party to show any differences in how he talks about politicians of
+different genders within either the Democratic or Republican party.
+
+
+```{r topicsAcrossTime}
 tweetsWithSentimentDateTime <- tweetsWithSentimentWithoutLink %>%
  separate(created_at, c("date", "time"), sep = " ")
 
@@ -360,7 +400,13 @@ ggplot(temp,
    x = "Year", y = "Tweet Average Sentiment Score Per Topic", color="Topic") + 
    geom_hline(yintercept=0, linetype="dashed", color = "red")
 ```
-```{r}
+
+Figure 5: Shows change of average sentiment of Tweets referring to a specific 
+topic across the years. Only showing a few topics, we selected the ones
+that have been Tweeted about for a long time. The vertical blue line indicates
+when Trump first became elected.
+
+```{r chiSquare}
 polarization_tweets <- tweetsWithSentimentWithoutLink %>%
    mutate(polarization = abs(ave_sentiment)) 
 
