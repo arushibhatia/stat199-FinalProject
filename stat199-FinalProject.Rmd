@@ -386,6 +386,7 @@ ggplot(aug, mapping = aes(sample = .resid)) +
 
 ggplot(data=aug, aes(x=.fitted, y=.resid)) + geom_point()+ geom_hline(yintercept=0, col="red")
 
+#fix this, correlation between people?
 trees %>% summarize(correlation = cor(Height, Girth))
 
 
@@ -408,6 +409,7 @@ ggplot(aug, mapping = aes(sample = .resid)) +
 
 ggplot(data=aug, aes(x=.fitted, y=.resid)) + geom_point()+ geom_hline(yintercept=0, col="red")
 
+#fix this, correlation between topics?
 trees %>% summarize(correlation = cor(Height, Girth))
 
 ```
