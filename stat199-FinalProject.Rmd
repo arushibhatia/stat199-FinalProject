@@ -95,7 +95,6 @@ number, you can get all the information available about that tweet using Tweepy
 ```{r packages-data, warning=FALSE, message=FALSE}
 trumpTweets <- read_csv("data/trumpTweetCSV.csv") 
 glimpse(trumpTweets)
-view(trumpTweets)
 ```
 ```{r people}
 trumpTweets <- trumpTweets %>%  
@@ -253,7 +252,7 @@ trumpTweets$element_id <- 1:nrow(trumpTweets)
 ```
 
 
-```{r creatingSentimentDataset}
+```{r creatingSentimentDataset, warning=FALSE}
 trumpTweetsSentiment <- sentiment_by(trumpTweets$text)
 tweetsWithSentiment <- left_join(trumpTweets, trumpTweetsSentiment, 
                                  by = "element_id")
@@ -288,52 +287,44 @@ peopleData <- peopleData %>% filter(existenceOfPerson==1)
 
 ggplot(data=peopleData, aes(x=person, fill = factor(posNeg))) +
   geom_bar(position = "fill") + 
-  labs(title="Least proportion of Tweets with negative sentiment about 
-       Amy Coney Barrett and Mike Pence",
+  labs(title="Lowest proportion of Tweets with negative sentiment were Tweets
+  mentioning Amy Coney Barrett and Mike Pence",
                   x="Politician",y ="Percentage of Tweets", fill="Sentiment")
-```
 
-```{r democraticSentiment}
-tweetsWithSentimentWithoutLink <- tweetsWithSentimentWithoutLink %>% 
-   mutate(gender=case_when((tweetsWithSentimentWithoutLink$obama == 1 |
-               tweetsWithSentimentWithoutLink$biden == 1|
-               tweetsWithSentimentWithoutLink$pence == 1|
-               tweetsWithSentimentWithoutLink$fauci == 1 | 
-               tweetsWithSentimentWithoutLink$mcconnell == 1) ~ "Male",
-               (tweetsWithSentimentWithoutLink$kamala == 1 |
-                   tweetsWithSentimentWithoutLink$pelosi == 1 |
-                   tweetsWithSentimentWithoutLink$aoc == 1|
-                   tweetsWithSentimentWithoutLink$amy == 1 |
-                   tweetsWithSentimentWithoutLink$nikki == 1 |
-                  tweetsWithSentimentWithoutLink$hillary == 1) ~ "Female"))
+peopleData <- peopleData %>% 
+   mutate(party=case_when((person == "obama" |
+               person == "biden"|
+               person == "kamala" | 
+               person == "pelosi" | 
+               person == "aoc"|
+                  person == "hillary") ~ "Democratic",
+               (person == "pence" |
+                   person == "amy" |
+                   person == "niki" |
+                  person == "mcconnell") ~ "Republican"))
 
+peopleData <- peopleData %>% 
+   mutate(gender=case_when((person=="obama" |
+              person=="biden"|
+               person=="pence"|
+               person=="fauci"| 
+               person=="mcconnell") ~ "Male",
+               (person=="kamala" |
+                   person=="pelosi" |
+                   person=="aoc"|
+                   person=="amy" |
+                   person=="nikki"|
+                  person=="hillary") ~ "Female"))
 
-tweetsWithSentimentWithoutLink <- tweetsWithSentimentWithoutLink %>%
-   mutate(gender = factor(gender))
-
-genderDemocrats <- tweetsWithSentimentWithoutLink %>% 
-   filter(gender=="Male" | gender =="Female") %>%
-   filter(obama == 1 | biden ==1 | kamala==1 | pelosi ==1 | aoc ==1 | 
-             hillary ==1)
-ggplot(data = genderDemocrats, mapping = aes(y = ave_sentiment, x = gender, 
-                                             color=gender)) +
+ggplot(data = peopleData %>% 
+          filter(party=="Democratic" | party == "Republican"), 
+       mapping = aes(x = party, y = ave_sentiment,color=gender)) +
    geom_boxplot() +
-   labs(title = "Sentiment scores are roughly the same, with more range for 
-        male politicians",
-        subtitle="Democratic politicians only",
-x = "Gender", y = "Sentiment Score")
-
-
-genderRepublicans<- tweetsWithSentimentWithoutLink %>% 
-   filter(gender=="Male" | gender =="Female") %>%
-   filter(pence == 1 | mcconnell ==1 | amy==1 | nikki==1)
-
-ggplot(data = genderRepublicans, mapping= aes(y = ave_sentiment, x = gender, 
-                                              color=gender)) +
-   geom_boxplot() +
-   labs(title = "Higher overall sentiment scores for female republicans",
-        subtitle="Republican politicians only",
-x = "Gender", y = "Sentiment Score")
+labs(title = "Overall more positive sentiment in Tweets mentioning Republicans",
+       subtitle="Generally lower sentiment for Democratic females vs. males, 
+   generally higher sentiment for Republican females vs. males",
+        x = "Party", y = "Tweet Average Sentiment Score") + 
+   geom_hline(yintercept=0, linetype="dashed", color = "red")
 
 ```
 
@@ -356,9 +347,18 @@ temp <- tweetsWithSentimentDateTimeFormatGroup %>% filter(topic=="climateChange"
    | topic=="news" | topic == "guns" | topic == "immigration") %>% 
    filter(!is.na(year))
 
-ggplot(temp, aes(x= year, y = avgSentimentForTopic, color = topic, 
-                 group=topic)) + theme(plot.margin = unit(c(1,0,1,0), "cm")) + 
-         geom_point() + geom_line() 
+ggplot(temp, 
+       aes(x= year, y = avgSentimentForTopic, color = topic, 
+           group=topic)) + theme(plot.margin = unit(c(1,0,1,0), "cm")) + 
+   geom_point() + 
+   geom_line() + 
+   geom_vline(xintercept = "2016", linetype="dotted", 
+                color = "blue", size=1.5) +
+   labs(title = "Average sentiment for specific topics across the years",
+       subtitle="Blue line indicates Trump's election, 
+     immigration and news follow similar patterns",
+   x = "Year", y = "Tweet Average Sentiment Score Per Topic", color="Topic") + 
+   geom_hline(yintercept=0, linetype="dashed", color = "red")
 ```
 ```{r}
 polarization_tweets <- tweetsWithSentimentWithoutLink %>%
@@ -369,6 +369,7 @@ chisq.test(table(polarization_tweets$posNeg,
 
 ```
 
+#GIVE CONDITIONS FOR LINEAR MODEL 
 ```{r linModel}
 person_retweets <- lm(retweet_count ~ obama + biden + pelosi + kamala + hillary 
                       + aoc + pence + nikki + mcconnell + amy + fauci, 
@@ -376,12 +377,39 @@ person_retweets <- lm(retweet_count ~ obama + biden + pelosi + kamala + hillary
 
 tidy(person_retweets)
 
+
+aug <- augment(person_retweets)
+
+ggplot(data=aug, aes(x=.resid)) + geom_histogram()
+
+ggplot(aug, mapping = aes(sample = .resid)) + 
+  stat_qq() + stat_qq_line()
+
+ggplot(data=aug, aes(x=.fitted, y=.resid)) + geom_point()+ geom_hline(yintercept=0, col="red")
+
+trees %>% summarize(correlation = cor(Height, Girth))
+
+
+
+
+
+
 topic_retweets <- lm(retweet_count ~ covid + climateChange + abortion + blm + 
                         guns + news + usa + russia + immigration, 
                  data = tweetsWithSentimentWithoutLink)
 
 tidy(topic_retweets)
 
+aug <- augment(topic_retweets)
+
+ggplot(data=aug, aes(x=.resid)) + geom_histogram()
+
+ggplot(aug, mapping = aes(sample = .resid)) + 
+  stat_qq() + stat_qq_line()
+
+ggplot(data=aug, aes(x=.fitted, y=.resid)) + geom_point()+ geom_hline(yintercept=0, col="red")
+
+trees %>% summarize(correlation = cor(Height, Girth))
 
 ```
 
