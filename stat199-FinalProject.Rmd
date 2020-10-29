@@ -369,7 +369,6 @@ chisq.test(table(polarization_tweets$posNeg,
 
 ```
 
-#GIVE CONDITIONS FOR LINEAR MODEL 
 ```{r linModel}
 person_retweets <- lm(retweet_count ~ obama + biden + pelosi + kamala + hillary 
                       + aoc + pence + nikki + mcconnell + amy + fauci, 
