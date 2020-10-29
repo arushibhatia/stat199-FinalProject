@@ -1,6 +1,6 @@
 ---
-title: "Final Project Proposal - STA 199"
-subtitle: "due Friday, Oct 9 at 11:59p"
+title: "Final Project Draft - STA 199"
+subtitle: "due Thursday, Oct 29 at 11:59p"
 author: "Ten Out of Ten: Arushi Bhatia, Luke Vermeer, Kevin Wang, Lauren May"
 output: pdf_document
 ---
@@ -11,14 +11,12 @@ install.packages("stopwords")
 install.packages("tidyverse")
 install.packages("tidytext")
 install.packages("wordcloud")
-install.packages("reshape2")
 install.packages("sentimentr")
 library(viridis)
 library(stopwords)
 library(tidyverse)
 library(tidytext)
 library(wordcloud)
-library(reshape2)
 library(sentimentr)
 ```
 
@@ -144,7 +142,6 @@ trumpTweets <- trumpTweets %>%
    mutate(nikki = case_when((grepl("Nikki Haley", text , ignore.case = TRUE)| 
                               grepl("Nikki", text , ignore.case = TRUE)) ~ 1,
                             TRUE ~0))
-trumpTweets %>% filter(nikki==1)
 
 
 trumpTweets <- trumpTweets %>%  
@@ -237,7 +234,8 @@ trumpTweets <- trumpTweets %>%
                             TRUE ~0))
 
 trumpTweets <- trumpTweets %>%  
-   mutate(immigration = case_when((grepl("immigrants", text , ignore.case = TRUE) | 
+   mutate(immigration = case_when((grepl("immigrants", text , 
+                                         ignore.case = TRUE) | 
                               grepl("immigration", text , ignore.case = TRUE) |
                       grepl("foreigner", text , ignore.case = TRUE) |
                         grepl("open border", text , ignore.case = TRUE) |
@@ -252,8 +250,6 @@ trumpTweets <- trumpTweets %>%
 
 
 trumpTweets$element_id <- 1:nrow(trumpTweets) 
-
-
 ```
 
 
@@ -262,10 +258,10 @@ trumpTweetsSentiment <- sentiment_by(trumpTweets$text)
 tweetsWithSentiment <- left_join(trumpTweets, trumpTweetsSentiment, 
                                  by = "element_id")
 
-
-tweetsWithSentiment <- tweetsWithSentiment %>% mutate(posNeg = case_when(ave_sentiment>0 ~ "positive", ave_sentiment<0 ~ "negative", ave_sentiment ==0 ~ "neutral"
-))
-            
+tweetsWithSentiment <- tweetsWithSentiment %>% 
+   mutate(posNeg = case_when(ave_sentiment>0 ~ "positive", 
+                             ave_sentiment<0 ~ "negative", 
+                             ave_sentiment ==0 ~ "neutral"))
 
 tweetsWithSentimentWithoutLink <- tweetsWithSentiment %>% 
   filter(!grepl("^https*", text))
@@ -279,7 +275,7 @@ freqWords <- justWords %>%
   count(word) %>%
   arrange(desc(n)) %>% 
    filter(!(word=="t.co" | word=="realdonaldtrump"| word=="https" | word=="rt"| 
-             word=="amp" | word=="http"))
+             word=="amp" | word=="http" | word =="10" | word=="2015"))
 freqWords %>% with(wordcloud(word, n, max.words = 100))
 ```
 
@@ -317,17 +313,23 @@ tweetsWithSentimentWithoutLink <- tweetsWithSentimentWithoutLink %>%
 
 genderDemocrats <- tweetsWithSentimentWithoutLink %>% 
    filter(gender=="Male" | gender =="Female") %>%
-   filter(obama == 1 | biden ==1 | kamala==1 | pelosi ==1 | aoc ==1 | hillary ==1)
-ggplot(data = genderDemocrats, mapping = aes(y = ave_sentiment, x = gender, color=gender)) +
+   filter(obama == 1 | biden ==1 | kamala==1 | pelosi ==1 | aoc ==1 | 
+             hillary ==1)
+ggplot(data = genderDemocrats, mapping = aes(y = ave_sentiment, x = gender, 
+                                             color=gender)) +
    geom_boxplot() +
-   labs(title = "Sentiment scores are roughly the same, with more range for male politicians",
+   labs(title = "Sentiment scores are roughly the same, with more range for 
+        male politicians",
         subtitle="Democratic politicians only",
 x = "Gender", y = "Sentiment Score")
+
 
 genderRepublicans<- tweetsWithSentimentWithoutLink %>% 
    filter(gender=="Male" | gender =="Female") %>%
    filter(pence == 1 | mcconnell ==1 | amy==1 | nikki==1)
-ggplot(data = genderRepublicans, mapping= aes(y = ave_sentiment, x = gender, color=gender)) +
+
+ggplot(data = genderRepublicans, mapping= aes(y = ave_sentiment, x = gender, 
+                                              color=gender)) +
    geom_boxplot() +
    labs(title = "Higher overall sentiment scores for female republicans",
         subtitle="Republican politicians only",
@@ -338,7 +340,6 @@ x = "Gender", y = "Sentiment Score")
 ```{r}
 tweetsWithSentimentDateTime <- tweetsWithSentimentWithoutLink %>%
  separate(created_at, c("date", "time"), sep = " ")
-
 
 tweetsWithSentimentDateTimeFormat <- tweetsWithSentimentDateTime %>%
  mutate(date = as.Date(date, tryFormats = c("%m/%d/%y")))%>%
@@ -359,14 +360,30 @@ ggplot(temp, aes(x= year, y = avgSentimentForTopic, color = topic,
                  group=topic)) + theme(plot.margin = unit(c(1,0,1,0), "cm")) + 
          geom_point() + geom_line() 
 ```
-```{r chisquared}
+```{r}
 polarization_tweets <- tweetsWithSentimentWithoutLink %>%
    mutate(polarization = abs(ave_sentiment)) 
 
 chisq.test(table(polarization_tweets$posNeg, 
  polarization_tweets$retweet_count))
+
 ```
 
+```{r linModel}
+person_retweets <- lm(retweet_count ~ obama + biden + pelosi + kamala + hillary 
+                      + aoc + pence + nikki + mcconnell + amy + fauci, 
+                 data = tweetsWithSentimentWithoutLink)
+
+tidy(person_retweets)
+
+topic_retweets <- lm(retweet_count ~ covid + climateChange + abortion + blm + 
+                        guns + news + usa + russia + immigration, 
+                 data = tweetsWithSentimentWithoutLink)
+
+tidy(topic_retweets)
+
+
+```
 
 
 
