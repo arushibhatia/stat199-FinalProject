@@ -7,12 +7,14 @@ output: pdf_document
 
 ```{r}
 install.packages("viridis")
+install.packages("stopwords")
 install.packages("tidyverse")
 install.packages("tidytext")
 install.packages("wordcloud")
 install.packages("reshape2")
 install.packages("sentimentr")
 library(viridis)
+library(stopwords)
 library(tidyverse)
 library(tidytext)
 library(wordcloud)
@@ -93,7 +95,6 @@ number, you can get all the information available about that tweet using Tweepy
 
 ### Glimpse of data
 ```{r packages-data, warning=FALSE, message=FALSE}
-library(tidyverse)
 trumpTweets <- read_csv("data/trumpTweetCSV.csv") 
 glimpse(trumpTweets)
 view(trumpTweets)
@@ -269,10 +270,21 @@ tweetsWithSentiment <- tweetsWithSentiment %>% mutate(posNeg = case_when(ave_sen
 tweetsWithSentimentWithoutLink <- tweetsWithSentiment %>% 
   filter(!grepl("^https*", text))
 ```
+```{r wordCloud, warning=FALSE}
+justWords <- tweetsWithSentimentWithoutLink %>%
+  unnest_tokens(word, text)
 
+freqWords <- justWords %>%
+  anti_join(get_stopwords(source = "smart"))  %>%
+  count(word) %>%
+  arrange(desc(n)) %>% 
+   filter(!(word=="t.co" | word=="realdonaldtrump"| word=="https" | word=="rt"| 
+             word=="amp" | word=="http"))
+freqWords %>% with(wordcloud(word, n, max.words = 100))
+```
 
 ```{r creatingNewDataFrameWithPeople}
-tweetsWithSentimentWithoutLink
+
 peopleData <- tweetsWithSentimentWithoutLink %>%
   pivot_longer(obama:amy, names_to = "person", values_to = "existenceOfPerson")
 
@@ -322,6 +334,40 @@ ggplot(data = genderRepublicans, mapping= aes(y = ave_sentiment, x = gender, col
 x = "Gender", y = "Sentiment Score")
 
 ```
+
+```{r}
+tweetsWithSentimentDateTime <- tweetsWithSentimentWithoutLink %>%
+ separate(created_at, c("date", "time"), sep = " ")
+
+
+tweetsWithSentimentDateTimeFormat <- tweetsWithSentimentDateTime %>%
+ mutate(date = as.Date(date, tryFormats = c("%m/%d/%y")))%>%
+ pivot_longer(covid:immigration, names_to = "topic", values_to = 
+                 "existenceOfTopic") %>%
+ filter(existenceOfTopic == 1)
+
+tweetsWithSentimentDateTimeFormatGroup <- tweetsWithSentimentDateTimeFormat %>%
+   mutate(month = format(date, "%m"), year = format(date, "%Y")) %>%
+   group_by(topic, year) %>% 
+   summarize(avgSentimentForTopic = mean(ave_sentiment))
+
+temp <- tweetsWithSentimentDateTimeFormatGroup %>% filter(topic=="climateChange"
+   | topic=="news" | topic == "guns" | topic == "immigration") %>% 
+   filter(!is.na(year))
+
+ggplot(temp, aes(x= year, y = avgSentimentForTopic, color = topic, 
+                 group=topic)) + theme(plot.margin = unit(c(1,0,1,0), "cm")) + 
+         geom_point() + geom_line() 
+```
+```{r chisquared}
+polarization_tweets <- tweetsWithSentimentWithoutLink %>%
+   mutate(polarization = abs(ave_sentiment)) 
+
+chisq.test(table(polarization_tweets$posNeg, 
+ polarization_tweets$retweet_count))
+```
+
+
 
 
 
