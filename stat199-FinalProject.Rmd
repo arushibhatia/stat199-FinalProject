@@ -16,12 +16,14 @@ install.packages("tidyverse")
 install.packages("tidytext")
 install.packages("wordcloud")
 install.packages("sentimentr")
+install.packages("lubridate")
 library(viridis)
 library(stopwords)
 library(tidyverse)
 library(tidytext)
 library(wordcloud)
 library(sentimentr)
+library(lubridate)
 ```
 
 ### Introduction
@@ -367,6 +369,22 @@ political party of the person mentioned in the Tweet, and split within
 party to show any differences in how he talks about politicians of
 different genders within either the Democratic or Republican party.
 
+```{r hypTest}
+dems <- peopleData %>%
+  filter(party=="Democratic")
+
+repubs <- peopleData %>%
+  filter(party=="Republican")
+
+t.test(dems$ave_sentiment, 
+       repubs$ave_sentiment,
+       mu = 0,
+       var.equal = FALSE,
+       alternative = "less",
+       conf.level = 0.95)
+```
+
+
 
 ```{r topicsAcrossTime}
 tweetsWithSentimentDateTime <- tweetsWithSentimentWithoutLink %>%
@@ -406,6 +424,40 @@ topic across the years. Only showing a few topics, we selected the ones
 that have been Tweeted about for a long time. The vertical blue line indicates
 when Trump first became elected.
 
+```{r hypTest2}
+yearVar <- tweetsWithSentimentDateTimeFormat  %>%
+   mutate(year = year(date))
+
+#CLIMATE CHANGE
+pre2016CC <- yearVar %>%
+  filter(year==2016 & topic=="climateChange")
+
+post2016CC <- yearVar %>%
+  filter(year>=2016 & topic=="climateChange")
+
+t.test(pre2016CC$ave_sentiment, 
+       post2016CC$ave_sentiment,
+       mu = 0,
+       var.equal = FALSE,
+       alternative = "two.sided",
+       conf.level = 0.95)
+
+
+#NEWS
+pre2016News <- yearVar %>%
+  filter(year==2016 & topic=="news")
+
+post2016News <- yearVar %>%
+  filter(year>=2016 & topic=="news")
+
+t.test(pre2016News$ave_sentiment, 
+       post2016News$ave_sentiment,
+       mu = 0,
+       var.equal = FALSE,
+       alternative = "two.sided",
+       conf.level = 0.95)
+```
+
 ```{r chiSquare}
 polarization_tweets <- tweetsWithSentimentWithoutLink %>%
    mutate(polarization = abs(ave_sentiment)) 
@@ -430,12 +482,11 @@ ggplot(data=aug, aes(x=.resid)) + geom_histogram()
 ggplot(aug, mapping = aes(sample = .resid)) + 
   stat_qq() + stat_qq_line()
 
-ggplot(data=aug, aes(x=.fitted, y=.resid)) + geom_point()+ geom_hline(yintercept=0, col="red")
+ggplot(data=aug, aes(x=.fitted, y=.resid)) + geom_point()+ 
+   geom_hline(yintercept=0, col="red")
 
 #fix this, correlation between people?
 trees %>% summarize(correlation = cor(Height, Girth))
-
-
 
 
 
