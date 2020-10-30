@@ -97,6 +97,96 @@ account and Trump retweeted
 number, you can get all the information available about that tweet using Tweepy 
 - text, timestamp, number of retweets / replies / favorites, geolocation, etc. 
 
+### Methodology 
+
+Our first step in beginning to analyze the relationships between subject, 
+sentiment, and reception of President Donald Trump’s tweets was to manipulate 
+the data set, creating some new variables that we could use for analysis. We 
+started by creating a set of identifier variables for different people that his 
+tweets might be about. These variables were created using a mutate command to 
+set them as either 1 or 0, 1 if the person was mentioned in a tweet, and 0 if 
+they weren’t. We created these variables for a total of 11 relevant political 
+figures: Barack Obama, Joe Biden, Hillary Clinton, Alexandria Ocasio-Cortez, 
+Nancy Pelosi, Kamala Harris, Mike Pence, Mitch McConnell, Amy Coney Barrett, 
+and Nikki Haley. For each of the person identifier variables, we searched for 
+people’s full names, their Twitter handles, and commonly-used nicknames to 
+determine whether or not a particular tweet was about them. We also repeated the 
+same process to create topical identifier variables for a range of subjects that 
+are prevalent in the nation’s political discourse. The topics were as follows: 
+COVID-19, climate change, abortion, the Black Lives Matter movement, guns, news, 
+immigration, Russia, and the United States. For each topic we searched for the 
+name of the thing outright (such as “BLM” or “climate change”), as well as words 
+and phrases that are commonly used in conjunction with these topics. For 
+example, tweets that mentioned ICE or the term “border wall” were categorized 
+under immigration, and tweets about CNN, FOX News and “media” all went under the 
+“news” topic. Next, using the pivot command in r, we created a variable for 
+“person,”  a categorical variable that told us which of the identifier variables 
+for people were equal to “1” for each tweet. The output was a variable that had 
+a value of either the name of one of the 11 people we searched for or “other.” 
+From the new “person” variable, we created two new variables called party and 
+gender. The party variable separated the 11 people we were looking at into 
+either democrats or republicans and assigned tweets about them to the 
+appropriate party category. We did the same for the gender of each of the 
+people giving tweets about these figures a value of either “male” or “female.” 
+Next, we used the package sentimentr to identify the sentiment of each of 
+Trump’s tweets. The package examines each tweet, identifying positive and 
+negative words based on a lexicon made by the package’s creator Tyler Rinker. 
+It then aggregates a sentiment score for the tweet, assigning a value of -1 to 
+words it deems negative, 1 for positive words and 0 for neutral words. This 
+results in an overall sentiment score. For each tweet, we created a new variable 
+called ave_sentiment that contained the raw, numeric sentiment score of the 
+text.  We then used the mutate command to create a new variable called posNeg 
+that grouped sentiment scores into three categories: positive, neutral, or 
+negative. Finally, we used the separate command in r to break up the variable 
+“created_at” into two separate variables for date and time. After this, each 
+observation had a date variable in the mm/dd/yy format and a time variable in 
+the 24-hour time format. After these manipulations, the data set contained the 
+following variables:
+
+- source: the version of Twitter used to share the tweet. For example “Twitter 
+for iPhone.”
+- text: the full text of the tweet.
+- created_at: gives the date (in mm/dd/yy format) and time (in 24-hour format) 
+at which the tweet was published.
+- retweet_count: number of retweets that the tweet received.
+- favorite_count: number of favorites that the tweet received.
+- is_retweet: assigns a value of either true or false for whether the tweet is 
+originally written by Trump or is a retweet of someone else.
+- id_str: The scrape.py script collects tweet ids. If you know a tweet's id 
+you can get all the information available about that tweet using Tweepy - text, 
+timestamp, number of retweets / replies / favorites, geolocation, etc. 
+- obama: 1 or 0 for whether the tweet talks about Barack Obama.
+- biden: 1 or 0 for whether the tweet talks about Joe Biden.
+- pelosi: 1 or 0 for whether the tweet talks about Nancy Pelosi.
+- kamala: 1 or 0 for whether the tweet talks about Kamala Harris.
+- hillary: 1 or 0 for whether the tweet talks about Hillary Clinton.
+-aoc: 1 or 0 for whether the tweet talks about Alexandria Ocasio-Cortez.
+- pence: 1 or 0 for whether the tweet talks about Mike Pence.
+- mcconnell: 1 or 0 for whether the tweet talks about Mitch McConnell.
+- fauci: 1 or 0 for whether the tweet talks about Dr.  Anthony Fauci.
+- amy: 1 or 0 for whether the tweet talks about Amy Coney Barrett.
+- nikki: 1 or 0 for whether the tweet talks about Nikki Haley.
+- covid: 1 or 0 for whether the tweet talks about COVID-19.
+- climateChange: 1 or 0 for whether the tweet talks about climate change.
+- abortion: 1 or 0 for whether the tweet talks about abortion.
+- blm: 1 or 0 for whether the tweet talks about the Black Lives Matter movement.
+- guns: 1 or 0 for whether the tweet talks about guns.
+- news: 1 or 0 for whether the tweet talks about news media.
+- usa: 1 or 0 for whether the tweet talks about the United States.
+- russia: 1 or 0 for whether the tweet talks about Russia.
+- immigration: 1 or 0 for whether the tweet talks about immigration.
+- person: categorical variable for the name of the person that the tweet is 
+about (from among the 11 looked at in this analysis).
+- party: political party of the person who is talked about in the tweet 
+(either democrat or republican).
+- gender: gender of the person who is talked about in the tweet (either male or 
+female).
+- ave_sentiment: numeric sentiment score of the tweet.
+- posNeg: categorical sentiment of the tweet (either positive, neutral or 
+negative).
+- ate: date that the tweet was posted (mm/dd/yy).
+- time: time that the tweet was posted (24-hour format).
+
 ### Glimpse of data
 ```{r packages-data, warning=FALSE, message=FALSE}
 trumpTweets <- read_csv("data/trumpTweetCSV.csv") 
@@ -466,6 +556,55 @@ chisq.test(table(polarization_tweets$posNeg,
  polarization_tweets$retweet_count))
 
 ```
+```{r linModel}
+
+tweetsWithSentimentWithoutLink <- tweetsWithSentimentWithoutLink%>%
+   filter(retweet_count!=0 & !is.na(retweet_count)) %>%
+   mutate(log_retweet_count = log(retweet_count))
+
+person_retweets <- lm(log_retweet_count ~ obama + biden + pelosi + kamala + hillary 
+   + aoc + pence + nikki + mcconnell + amy + fauci, 
+   data = tweetsWithSentimentWithoutLink)
+
+tidy(person_retweets)
+
+
+aug <- augment(person_retweets)
+
+ggplot(data=aug, aes(x=.resid)) + geom_histogram()
+
+ggplot(aug, mapping = aes(sample = .resid)) + 
+   stat_qq() + stat_qq_line()
+
+ggplot(data=aug, aes(x=.fitted, y=.resid)) + geom_point()+ 
+   geom_hline(yintercept=0, col="red")
+
+#fix this, correlation between people?
+trees %>% summarize(correlation = cor(Height, Girth))
+
+
+
+
+topic_retweets <- lm(log_retweet_count ~ covid + climateChange + abortion + blm + 
+   guns + news + usa + russia + immigration, 
+   data = tweetsWithSentimentWithoutLink)
+
+tidy(topic_retweets)
+
+aug <- augment(topic_retweets)
+
+ggplot(data=aug, aes(x=.resid)) + geom_histogram()
+
+ggplot(aug, mapping = aes(sample = .resid)) + 
+   stat_qq() + stat_qq_line()
+
+ggplot(data=aug, aes(x=.fitted, y=.resid)) + geom_point()+ geom_hline(yintercept=0, col="red")
+
+#fix this, correlation between topics?
+trees %>% summarize(correlation = cor(Height, Girth))
+
+```
+
 
 ```{r linModel}
 person_retweets <- lm(retweet_count ~ obama + biden + pelosi + kamala + hillary 
@@ -504,16 +643,103 @@ ggplot(data=aug, aes(x=.resid)) + geom_histogram()
 ggplot(aug, mapping = aes(sample = .resid)) + 
   stat_qq() + stat_qq_line()
 
-ggplot(data=aug, aes(x=.fitted, y=.resid)) + geom_point()+ geom_hline(yintercept=0, col="red")
+ggplot(data=aug, aes(x=.fitted, y=.resid)) + geom_point() + 
+   geom_hline(yintercept=0, col="red")
 
 #fix this, correlation between topics?
 trees %>% summarize(correlation = cor(Height, Girth))
 
 ```
+### Results
+(Figure 1)
+The purpose of this visualization is to analyze what words are most commonly 
+found in Donald Trump’s tweet. Using a word cloud, the most common words are 
+displayed with the most frequent words being displayed larger. Given the 
+results, we can see that some of the words he most commonly uses are Trump, 
+president, people, country, america, and time. While these words don’t 
+necessarily indicate the full scope of what he discusses on his Twitter 
+account, we are able to draw the conclusion that most of his tweets are in 
+regard to his role as the President of the United States. We believed it would 
+be interesting to see if a common theme would develop among his most common 
+words, which is partially indicated in our results. 
+
+(Figure 3)
+Figure 3 shows the relative proportions of tweets with positive, neutral and 
+negative overall sentiment that Donald Trump has shared about each of the people 
+covered in our dataset. By creating a bar plot, we were able to actively compare 
+the sentiments Trump tends to have towards specific people making it easier to 
+visualize the results. Overall, it appears that Alexadria Ocasio-Cortez, Hillary 
+Clinton, and Nancy Pelosi recieved the highest proportion of tweets with 
+negative sentiment. Amy Coney Barrett had the lowest proportion of negative 
+tweets, followed by Vice President Mike Pence. On the opposite side of the 
+spectrum, Senate Majority Leader Mitch McConnell had the highest proportion of 
+positive tweets while Amy Coney Barrett, Mike Pence, and Nikki Haley also 
+received a significant majority of tweets with a positive sentiment. These 
+results were particularly interesting because it shows that Trump tends to 
+tweet about people of the same party with positive sentiment more frequently 
+compared to the people of the democratic party. 
+
+(Chi Square Test)
+The variable, polarization, is defined as how intense the sentiment of 
+Donald Trump’s tweet is. This hypothesis test will analyze if the polarization 
+of the tweet and the amount of retweets are dependent or independent of each 
+other. We chose to analyze this because we believed it to indicate the public’s 
+response to his tweets. We can draw the conclusion that the public reaction is 
+dependent on how intense of a sentiment Trump expresses if we reject the null 
+hypothesis.
+
+We are performing a hypothesis test using a chi-square test. We are performing 
+this hypothesis test at the 0.05 significance levels. 
+Here are our null and alternative hypotheses: 
+
+$H_0$: The polarization of the tweet and the amount of retweets are independent; 
+there is no association between the two variables. 
+
+$H_1$: The polarization of the tweet  and the amount of retweets are NOT 
+independent; there is an association between the two variables 
+
+Under the assumption that the null hypothesis is true, the chi-square test 
+statistic follows a Chi-square distribution with degrees of freedom equal to 
+39554.
+
+The value of our test statistic, chi-square, is 41580. 
+
+The p-value of our chi-square test was 6.949e-13, which is less than the 
+significance level of 0.05. This means we reject the null hypothesis. We are 
+concluding that there is sufficient evidence to suggest that the presence of 
+throat pain and ASA classification are NOT independent or that there is 
+sufficient evidence to suggest that there is an association between the two 
+variables. More specifically, this hypothesis test shows that the amount of 
+retweets are dependent on how polarizing President Trump’s tweets are. 
 
 
+The purpose of these visualizations is to indicate the different sentiment he 
+displays towards male versus female politicians. We decided to divide this into 
+two visualizations by party affiliation because we believed the results could be 
+skewed by differing political beliefs, and since we just wanted to learn if he 
+had a different sentiment towards strictly males or females, we figured this was 
+the best way to isolate the analysis of the gender variable. This visualization 
+of the Democrats shows the average sentiment score among the Democratic 
+politicians, showing specifically the difference in sentiment between male and 
+female politicians using a box plot. This visualization shows that when Donald 
+Trump discusses Democratic politicians, he has a similar sentiment towards male 
+and female, which is fairly close to “neutral”. We also noticed that for this 
+visualization, the male Democrats had a larger range of sentiments than the 
+female Democrats. In the visualization of male and female Republicans, the 
+females had a slightly higher average sentiment compared to their male 
+counterparts. This could indicate that he talks about males in his party in a 
+less positive manner as compared to the females. We also recognized that, again, 
+the male Republicans had a larger range of sentiments than the female 
+Republicans, showing that his sentiments are more likely to fluctuate when 
+discussing a male in his tweets.
 
-
+(Topics over time)
+The purpose of this visualization is to see if Donald Trump’s sentiments towards 
+specific “hot button topics” change over time. We compiled all the tweets into 
+a line plot with time as the x-axis and average sentiment as the y-axis. By 
+taking the average sentiment of each topic by year, we were able to create this 
+visualization and see how his sentiments in his tweets changed when discussing 
+the topics. 
 ### Sources
 http://www.trumptwitterarchive.com/about
 
