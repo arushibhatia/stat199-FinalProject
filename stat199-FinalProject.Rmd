@@ -459,6 +459,7 @@ political party of the person mentioned in the Tweet, and split within
 party to show any differences in how he talks about politicians of
 different genders within either the Democratic or Republican party.
 
+
 ```{r hypTest}
 dems <- peopleData %>%
   filter(party=="Democratic")
@@ -532,6 +533,35 @@ t.test(pre2016CC$ave_sentiment,
        alternative = "two.sided",
        conf.level = 0.95)
 
+#GUNS 
+pre2016guns <- yearVar %>%
+  filter(year==2016 & topic=="guns")
+
+post2016guns <- yearVar %>%
+  filter(year>=2016 & topic=="guns")
+
+t.test(pre2016guns$ave_sentiment, 
+       post2016guns$ave_sentiment,
+       mu = 0,
+       var.equal = FALSE,
+       alternative = "two.sided",
+       conf.level = 0.95)
+
+
+#IMMIGRATION 
+pre2016imm <- yearVar %>%
+  filter(year==2016 & topic=="immigration")
+
+post2016imm <- yearVar %>%
+  filter(year>=2016 & topic=="immigration")
+
+t.test(pre2016imm$ave_sentiment, 
+       post2016imm$ave_sentiment,
+       mu = 0,
+       var.equal = FALSE,
+       alternative = "two.sided",
+       conf.level = 0.95)
+
 
 #NEWS
 pre2016News <- yearVar %>%
@@ -549,11 +579,17 @@ t.test(pre2016News$ave_sentiment,
 ```
 
 ```{r chiSquare}
-polarization_tweets <- tweetsWithSentimentWithoutLink %>%
-   mutate(polarization = abs(ave_sentiment)) 
+polarization_tweets <- tweetsWithSentiment %>%
+   mutate(polarization = abs(ave_sentiment)) %>%
+   mutate(retweet_size = case_when(retweet_count <= 20000 ~ 1,
+      retweet_count > 20000 & retweet_count <= 40000 ~ 2,
+      retweet_count > 40000 & retweet_count <= 60000 ~ 3,
+      retweet_count > 60000 & retweet_count <= 80000 ~ 4,
+      retweet_count > 80000 & retweet_count <= 100000 ~ 5, 
+      retweet_count > 100000 ~ 6))
 
 chisq.test(table(polarization_tweets$posNeg, 
- polarization_tweets$retweet_count))
+   polarization_tweets$retweet_size))
 
 ```
 ```{r linModel}
@@ -606,7 +642,7 @@ trees %>% summarize(correlation = cor(Height, Girth))
 ```
 
 
-```{r linModel}
+```{r linModel2}
 person_retweets <- lm(retweet_count ~ obama + biden + pelosi + kamala + hillary 
                       + aoc + pence + nikki + mcconnell + amy + fauci, 
                  data = tweetsWithSentimentWithoutLink)
