@@ -93,7 +93,9 @@ of the Tweet, and then uses the metadata to obtain all the other information
 about the Tweet (such as the text, timestamp, number of favorites, etc.). This 
 other information is then compiled into a data set, which is made available to 
 the public. This data set is updated every minute, which also means that deleted 
-Tweets would most likely also appear in this data set. 
+Tweets would most likely also appear in this data set. However, as noted on
+the website, many of the Tweets are missing, either due to them being deleted
+before the data set was updated, or other reasons.
 
 This data set includes 53,697 observations. Each individual observation is one 
 of President Donald Trump’s Tweets. The original data set contains 7 variables: 
@@ -117,6 +119,7 @@ account and Trump reTweeted
 number, you can get all the information available about that Tweet using Tweepy 
 
 #### Setting Up Our Data
+
 
 Our first step in analyzing the relationships between subject and sentiment of 
 President Donald Trump’s Tweets was to manipulate the data set, creating some 
@@ -517,15 +520,25 @@ counterparts. This could indicate that he talks about males in his party in a
 less positive manner as compared to the females. We also recognized that, again, 
 the male Republicans had a larger range of sentiments than the female 
 Republicans, showing that his sentiments cover a larger range of positive
-and negative sentiments when talking about Republican males.
+and negative sentiments when talking about Republican males. We will explore
+this question further with a Central Limit Theorem-based t-test to investigate
+if there is enough evidence to suggest that he talks, on average, more 
+negatively about Democrats than Republicans. Similarly, we will also do another
+t-test to investigate if there is enough evidence to suggest that he talks, on
+average, more positively about males than females.
 
 Figure 5 allows us to see the change in Donald Trump’s sentiments towards 
 specific “hot button topics” over time. We compiled all the Tweets into 
 a line plot with time as the x-axis and average sentiment as the y-axis. By 
 taking the average sentiment of each topic by year, we were able to create this 
 visualization and see how his sentiments in his Tweets changed when discussing 
-some specific topics. 
+some specific topics. To investigate this further, we will do a CLT-based
+t-test to see if there is enough evidence to sugest that the mean
+sentiment score for Tweets on a specific topic before Trump was elected (before
+2016) is not equal to the mean sentiment score for Tweets after he was elected.
+We will do this for a few different topics.
 
+\newpage 
 ```{r creatingSentimentDataset, echo=FALSE, warning=FALSE, message=FALSE}
 trumpTweetsSentiment <- sentiment_by(trumpTweets$text)
 TweetsWithSentiment <- left_join(trumpTweets, trumpTweetsSentiment, 
@@ -558,11 +571,13 @@ of the words that were not part of the actual text of the Tweet or were
 artifacts of Tweets (such as URLs, account names, and years) were removed to 
 clean the data.
 
+\newpage 
+
 ```{r wordFreqGraph, echo=FALSE, warning=FALSE, message=FALSE}
 freqChart <- freqWords %>%
   top_n(20) %>%
   ggplot(aes(fct_reorder(word, n), n)) +
-    geom_col() +
+    geom_col(fill = "pink", color = "black") +
     coord_flip() + 
     theme_minimal() +
     labs(title = "Frequency of words in Donald Trump's Tweets",
@@ -596,6 +611,7 @@ ggplot(data=peopleData, aes(x=person, fill = factor(posNeg))) +
 Figure 3: Illustrates the proportion of Tweets with average negative (<0), 
 neutral (=0), and positive (>0) sentiment that mention a specific politician.
 
+\newpage 
 ```{r partyAndGender, echo=FALSE, warning=FALSE, message=FALSE}
 peopleData <- peopleData %>% 
    mutate(party=case_when((person == "obama" |
@@ -638,7 +654,7 @@ political party of the person mentioned in the Tweet, and split within
 party to show any differences in how he talks about politicians of
 different genders within either the Democratic or Republican party.
 
-
+\newpage 
 ```{r hypTest}
 dems <- peopleData %>%
   filter(party=="Democratic")
@@ -713,7 +729,7 @@ yearVar <- TweetsWithSentimentDateTimeFormat  %>%
 
 #CLIMATE CHANGE
 pre2016CC <- yearVar %>%
-  filter(year==2016 & topic=="climateChange")
+  filter(year<2016 & topic=="climateChange")
 
 post2016CC <- yearVar %>%
   filter(year>=2016 & topic=="climateChange")
@@ -727,7 +743,7 @@ t.test(pre2016CC$ave_sentiment,
 
 #GUNS 
 pre2016guns <- yearVar %>%
-  filter(year==2016 & topic=="guns")
+  filter(year<2016 & topic=="guns")
 
 post2016guns <- yearVar %>%
   filter(year>=2016 & topic=="guns")
@@ -742,7 +758,7 @@ t.test(pre2016guns$ave_sentiment,
 
 #IMMIGRATION 
 pre2016imm <- yearVar %>%
-  filter(year==2016 & topic=="immigration")
+  filter(year<2016 & topic=="immigration")
 
 post2016imm <- yearVar %>%
   filter(year>=2016 & topic=="immigration")
@@ -757,7 +773,7 @@ t.test(pre2016imm$ave_sentiment,
 
 #NEWS
 pre2016News <- yearVar %>%
-  filter(year==2016 & topic=="news")
+  filter(year<2016 & topic=="news")
 
 post2016News <- yearVar %>%
   filter(year>=2016 & topic=="news")
@@ -768,45 +784,108 @@ t.test(pre2016News$ave_sentiment,
        var.equal = FALSE,
        alternative = "two.sided",
        conf.level = 0.95)
+
+
+# CHI SQUARED
+
+#CLIMATE CHANGE
+prePostClimateChange <- yearVar %>%
+   filter(topic=="climateChange") %>%
+   mutate(prePost = case_when(year<2016 ~ "preElection",
+                              year>=2016  ~ "postElection"))
+
+chisq.test(table(prePostClimateChange$prePost, 
+                 prePostClimateChange$posNeg))
+#GUNS 
+prePostGuns <- yearVar %>%
+   filter(topic=="guns") %>%
+   mutate(prePost = case_when(year<2016 ~ "preElection",
+                              year>=2016  ~ "postElection"))
+
+chisq.test(table(prePostGuns$prePost, 
+                 prePostGuns$posNeg))
+
+#IMMIGRATION 
+# chi squared test to see if there is an association between whether the Tweet
+# was pre election or post election and the average sentiment score
+
+prePostImmigration <- yearVar %>%
+   filter(topic=="immigration") %>%
+   mutate(prePost = case_when(year<2016 ~ "preElection",
+                              year>=2016  ~ "postElection"))
+
+chisq.test(table(prePostImmigration$prePost, 
+                 prePostImmigration$posNeg))
+
+#NEWS
+# chi squared test to see if there is an association between whether the Tweet
+# was pre election or post election and the average sentiment score
+
+prePostNews <- yearVar %>%
+   filter(topic=="news") %>%
+   mutate(prePost = case_when(year<2016 ~ "preElection",
+                              year>=2016  ~ "postElection"))
+
+chisq.test(table(prePostNews$prePost, 
+                 prePostNews$posNeg))
+
+
+
 ```
+\newpage 
 
 ### Results
+Sentiment across political party: In order to determine if the true mean 
+sentiment score of Donald Trump's Tweets about Democratic politicians is less 
+than the mean sentiment score of Donald Trump's Tweets about Republican 
+politicians, a CLT-based t-test was used. The null hypothesis, $H_0$, is that 
+the true mean sentiment score of Donald Trump's Tweets about Democratic 
+politicians is equal to the true mean sentiment score of Donald Trump's Tweets 
+about Republican politicians. This is being tested against the alternative 
+hypothesis, $H_1$, which is that the true mean sentiment score of Donald Trump's 
+Tweets about Democratic politicians is less than the true mean sentiment score 
+of Donald Trump's Tweets about Republican politicians. We used the Central Limit 
+Theorem to conduct this hypothesis test at the $\alpha$ = 0.05 significance 
+level. We know that we can use the CLT because our observations are 
+independently selected and our sample size is greater than 30 which means we can 
+expect the CLT to apply. The CLT tells us that we will have a t distribution 
+with 469.92 degrees of freedom since we do not have the population standard 
+deviation ($\sigma$) of sentiment scores. Under the null hypothesis, we also 
+know that the distribution of the test statistic can be approximated by a normal 
+distribution which means that it is unimodal, symmetric, and centered at zero.
+The value of out test statistic, t, is -14.678. Our p-value is less than 
+2.2 * 10$^{-16}$, which is very close to zero and less than our $\alpha$ of 
+0.05. This means that we reject the null hypothesis.
+In the context of our data, this tells us that there is sufficient evidence to 
+suggest that the true mean sentiment score of Donald Trump's 
+Tweets about Democratic politicians is less than the true mean sentiment score 
+of Donald Trump's Tweets about Republican politicians.
 
-
-
-
-(Chi Square Test)
-The variable, polarization, is defined as how intense the sentiment of 
-Donald Trump’s Tweet is. This hypothesis test will analyze if the polarization 
-of the Tweet and the amount of reTweets are dependent or independent of each 
-other. We chose to analyze this because we believed it to indicate the public’s 
-response to his Tweets. We can draw the conclusion that the public reaction is 
-dependent on how intense of a sentiment Trump expresses if we reject the null 
-hypothesis.
-
-We are performing a hypothesis test using a chi-square test. We are performing 
-this hypothesis test at the 0.05 significance levels. 
-Here are our null and alternative hypotheses: 
-
-$H_0$: The polarization of the Tweet and the amount of reTweets are independent; 
-there is no association between the two variables. 
-
-$H_1$: The polarization of the Tweet  and the amount of reTweets are NOT 
-independent; there is an association between the two variables 
-
-Under the assumption that the null hypothesis is true, the chi-square test 
-statistic follows a Chi-square distribution with degrees of freedom equal to 
-39554.
-
-The value of our test statistic, chi-square, is 41580. 
-
-The p-value of our chi-square test was 6.949e-13, which is less than the 
-significance level of 0.05. This means we reject the null hypothesis. We are 
-concluding that there is sufficient evidence to suggest that the presence of 
-throat pain and ASA classification are NOT independent or that there is 
-sufficient evidence to suggest that there is an association between the two 
-variables. More specifically, this hypothesis test shows that the amount of 
-reTweets are dependent on how polarizing President Trump’s Tweets are. 
+Sentiment across gender: In order to determine if the true mean 
+sentiment score of Donald Trump's Tweets about male politicians is greater 
+than the mean sentiment score of Donald Trump's Tweets about female 
+politicians, a CLT-based t-test was used. The null hypothesis, $H_0$, is that 
+the true mean sentiment score of Donald Trump's Tweets about male 
+politicians is equal to the true mean sentiment score of Donald Trump's Tweets 
+about female politicians. This is being tested against the alternative 
+hypothesis, $H_1$, which is that the true mean sentiment score of Donald Trump's 
+Tweets about male politicians is greater than the true mean sentiment score 
+of Donald Trump's Tweets about female politicians. We used the Central Limit 
+Theorem to conduct this hypothesis test at the $\alpha$ = 0.05 significance 
+level. We know that we can use the CLT because our observations are 
+independently selected and our sample size is greater than 30 which means we can 
+expect the CLT to apply. The CLT tells us that we will have a t distribution 
+with 3900.6 degrees of freedom since we do not have the population standard 
+deviation ($\sigma$) of sentiment scores. Under the null hypothesis, we also 
+know that the distribution of the test statistic can be approximated by a normal 
+distribution which means that it is unimodal, symmetric, and centered at zero.
+The value of out test statistic, t, is 6.6948. Our p-value is 1.234*10$^{-11}$, 
+which is very close to zero and less than our $\alpha$ of 
+0.05. This means that we reject the null hypothesis.
+In the context of our data, this tells us that there is sufficient evidence to 
+suggest that the true mean sentiment score of Donald Trump's 
+Tweets about male politicians is greater than the true mean sentiment score 
+of Donald Trump's Tweets about female politicians.
 
 
 ### Sources
