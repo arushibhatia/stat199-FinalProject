@@ -470,6 +470,61 @@ trumpTweets <- trumpTweets %>%
 trumpTweets$element_id <- 1:nrow(trumpTweets) 
 ```
 
+We created multiple visualizaitons to help us explore our data. In Figure 1, we
+created a word cloud of the most common words found in his Tweets. The most 
+common words are displayed with the most frequent words being displayed 
+larger. Given the results, we can see that some of the words he most commonly 
+uses are "great", "Trump", "president", "people", "country", "America", and 
+"time." While these words don’t necessarily indicate the full scope of what he 
+discusses on his Twitter account, we notice that most of his Tweets are in 
+regard to his role as the President of the United States. We believed it would 
+be interesting to see if a common theme would develop among his most common 
+words, which is partially indicated in our results. 
+
+Similarly, Figure 2 is a frequency chart of his top 20 most used words in his
+Tweets. It is interesting to see how much more the word "great" is used in
+comparison to the other words displayed on the chart. 
+
+Figure 3 shows the relative proportions of Tweets with positive, neutral and 
+negative overall sentiment that Donald Trump has shared about each of the people 
+covered in our data set. By creating a percent stacked bar plot, we were able to 
+actively compare the sentiments Trump tends to have towards specific people, 
+making it easier to visualize the results. Overall, it appears that Alexadria 
+Ocasio-Cortez, Hillary Clinton, and Nancy Pelosi recieved the highest proportion 
+of Tweets with negative sentiment. Amy Coney Barrett had the lowest proportion 
+of negative Tweets, followed by Vice President Mike Pence. Looking at positive
+Tweet proportions, Senate Majority Leader Mitch McConnell had the highest 
+proportion of positive Tweets while Amy Coney Barrett, Mike Pence, and Nikki 
+Haley also received a significant majority of Tweets with a positive sentiment. 
+These results were particularly interesting because it shows that Trump tends to 
+Tweet about people of the same party with positive sentiment at a greater 
+proportion compared to the people of the Democratic party. 
+
+The purpose of Figure 4 is to explore the different sentiment Trump displays
+towards male versus female politicians. We decided to look at this based
+on party affiliation, because we believed that the results could be different
+depending if we were considering a Republican female politician versus a 
+Democrat female politician (we just wanted to learn if he had a different 
+sentiment towards strictly males or females, or whether it had to also
+do with politican affiliation). This visualization shows that when Donald Trump 
+discusses Democratic politicians, he has a similar median sentiment towards male 
+and female, which is fairly close to “neutral”. We also noticed that for this 
+visualization, the male Democrats had a larger range of sentiments than the 
+female Democrats, but the lowest score was given to a female Democratic
+politician. In the visualization of male and female Republicans, the 
+females had a slightly higher average sentiment compared to their male 
+counterparts. This could indicate that he talks about males in his party in a 
+less positive manner as compared to the females. We also recognized that, again, 
+the male Republicans had a larger range of sentiments than the female 
+Republicans, showing that his sentiments cover a larger range of positive
+and negative sentiments when talking about Republican males.
+
+Figure 5 allows us to see the change in Donald Trump’s sentiments towards 
+specific “hot button topics” over time. We compiled all the Tweets into 
+a line plot with time as the x-axis and average sentiment as the y-axis. By 
+taking the average sentiment of each topic by year, we were able to create this 
+visualization and see how his sentiments in his Tweets changed when discussing 
+some specific topics. 
 
 ```{r creatingSentimentDataset, echo=FALSE, warning=FALSE, message=FALSE}
 trumpTweetsSentiment <- sentiment_by(trumpTweets$text)
@@ -716,33 +771,9 @@ t.test(pre2016News$ave_sentiment,
 ```
 
 ### Results
-(Figure 1)
-The purpose of this visualization is to analyze what words are most commonly 
-found in Donald Trump’s Tweet. Using a word cloud, the most common words are 
-displayed with the most frequent words being displayed larger. Given the 
-results, we can see that some of the words he most commonly uses are Trump, 
-president, people, country, america, and time. While these words don’t 
-necessarily indicate the full scope of what he discusses on his Twitter 
-account, we are able to draw the conclusion that most of his Tweets are in 
-regard to his role as the President of the United States. We believed it would 
-be interesting to see if a common theme would develop among his most common 
-words, which is partially indicated in our results. 
 
-(Figure 3)
-Figure 3 shows the relative proportions of Tweets with positive, neutral and 
-negative overall sentiment that Donald Trump has shared about each of the people 
-covered in our dataset. By creating a bar plot, we were able to actively compare 
-the sentiments Trump tends to have towards specific people making it easier to 
-visualize the results. Overall, it appears that Alexadria Ocasio-Cortez, Hillary 
-Clinton, and Nancy Pelosi recieved the highest proportion of Tweets with 
-negative sentiment. Amy Coney Barrett had the lowest proportion of negative 
-Tweets, followed by Vice President Mike Pence. On the opposite side of the 
-spectrum, Senate Majority Leader Mitch McConnell had the highest proportion of 
-positive Tweets while Amy Coney Barrett, Mike Pence, and Nikki Haley also 
-received a significant majority of Tweets with a positive sentiment. These 
-results were particularly interesting because it shows that Trump tends to 
-Tweet about people of the same party with positive sentiment more frequently 
-compared to the people of the democratic party. 
+
+
 
 (Chi Square Test)
 The variable, polarization, is defined as how intense the sentiment of 
@@ -778,33 +809,6 @@ variables. More specifically, this hypothesis test shows that the amount of
 reTweets are dependent on how polarizing President Trump’s Tweets are. 
 
 
-The purpose of these visualizations is to indicate the different sentiment he 
-displays towards male versus female politicians. We decided to divide this into 
-two visualizations by party affiliation because we believed the results could be 
-skewed by differing political beliefs, and since we just wanted to learn if he 
-had a different sentiment towards strictly males or females, we figured this was 
-the best way to isolate the analysis of the gender variable. This visualization 
-of the Democrats shows the average sentiment score among the Democratic 
-politicians, showing specifically the difference in sentiment between male and 
-female politicians using a box plot. This visualization shows that when Donald 
-Trump discusses Democratic politicians, he has a similar sentiment towards male 
-and female, which is fairly close to “neutral”. We also noticed that for this 
-visualization, the male Democrats had a larger range of sentiments than the 
-female Democrats. In the visualization of male and female Republicans, the 
-females had a slightly higher average sentiment compared to their male 
-counterparts. This could indicate that he talks about males in his party in a 
-less positive manner as compared to the females. We also recognized that, again, 
-the male Republicans had a larger range of sentiments than the female 
-Republicans, showing that his sentiments are more likely to fluctuate when 
-discussing a male in his Tweets.
-
-(Topics over time)
-The purpose of this visualization is to see if Donald Trump’s sentiments towards 
-specific “hot button topics” change over time. We compiled all the Tweets into 
-a line plot with time as the x-axis and average sentiment as the y-axis. By 
-taking the average sentiment of each topic by year, we were able to create this 
-visualization and see how his sentiments in his Tweets changed when discussing 
-the topics. 
 ### Sources
 http://www.trumptwitterarchive.com/about
 
