@@ -26,6 +26,9 @@ library(sentimentr)
 library(lubridate)
 ```
 
+## Abstract
+NEED TO ADD
+
 ## Introduction and Data
 
 ### Background and Motivation
@@ -58,11 +61,13 @@ individual media coverage (Real Clear Politics, 2019).
 ### Research Questions
 Because Trump uses Twitter to convey his political agendas in short blurbs, 
 analyzing his Tweets can give a unique insight into the way that he thinks. 
-Of principal interest were the following research question: 1) How does 
-Donald Trump’s sentiment in his Tweets vary across people? and 2) How does 
-Donald Trump’s sentiment in his Tweets vary across “hot topics?”
+Of principal interest was the following research question: How does Donald
+Trump's sentiment in his Tweets vary across his "in-groups" and "out-groups?"
+We will define "in-groups" and "out-groups" in different ways, such as political
+party, gender, and topics that align with his beliefs vs. topics that don't 
+align with his beliefs.
 
-To answer these questions, our team obtained a dataset of Donald Trump’s 
+To answer this question, our team obtained a dataset of Donald Trump’s 
 Tweets (n = 53,697). In order to assess how his sentiment varies across 
 people and various hot topics, we created indicator variables for different 
 people and topics to indicate that a Tweet referenced a specific person/topic. 
@@ -72,14 +77,14 @@ then able to distinguish the Tweets into discernable categories, allowing us to
 conduct hypothesis tests and create interesting visualizations.
 
 Our hypothesis regarding our research questions is that Trump’s Tweets about
-individuals in his "outgroup" have a greater proportion of Tweets
+individuals in his "out-group" have a greater proportion of Tweets
 with a negative sentiment. Similarly, we hypothesize that his Tweets about
-individuals in his "ingroup" will have a greater proportion of Tweets
-with a positive sentiment. We will define ingroup and outgroup in different
-ways, and evalate it from different perspectives as well.
+individuals in his "in-group" will have a greater proportion of Tweets
+with a positive sentiment. We will define in-group and out-group in different
+ways, and evaluate it from different perspectives as well.
 
 ### Our Data
-The data set was extracted from a website - TrumpTwitterArchive.com. The original 
+The data set was extracted from a website-TrumpTwitterArchive.com. The original 
 curator of the data created their own Twitter scraper in order to obtain the 
 data. They utilized Python, Selenium (which is a software suite that allows the 
 automation of tests utilizing web browsers), and Tweepy (a Python library for 
@@ -463,7 +468,7 @@ trumpTweets <- trumpTweets %>%
                         grepl("the wall", text , ignore.case = TRUE) |
                         grepl("border wall", text , ignore.case = TRUE)|
                         grepl("Mexicans", text , ignore.case = TRUE)|
-                        grepl("refugees", text , ignore.case = TRUE)|
+                        grepl("refugee", text , ignore.case = TRUE)|
                         grepl("ice", text , ignore.case = TRUE)|
                         grepl("border patrol", text , ignore.case = TRUE)|
                         grepl("cages", text , ignore.case = TRUE)) ~ 1,
@@ -486,7 +491,7 @@ such as “great”, “good”, “strong”, and “nice” while also using m
 words such as “fake”, “false”, “bad”, and “crime”. Given the polarity of his 
 Tweets, we believed it would be interesting to see if a common theme would 
 develop among his most common words, which is partially indicated in our 
-results. 
+results.
 
 Similarly, Figure 2 is a frequency chart of his top 20 most used words in his
 Tweets. It is interesting to see how much more the word "great" is used in
@@ -505,7 +510,9 @@ proportion of positive Tweets while Amy Coney Barrett, Mike Pence, and Nikki
 Haley also received a significant majority of Tweets with a positive sentiment. 
 These results were particularly interesting because it shows that Trump tends to 
 Tweet about people of the same party with positive sentiment at a greater 
-proportion compared to the people of the Democratic party. 
+proportion compared to the people of the Democratic party. We will explore this
+further with a Chi-squared test to see if people mentioned in his Tweet and 
+sentiment are independent.
 
 The purpose of Figure 4 is to explore the different sentiment Trump displays
 towards male versus female politicians. We decided to look at this based
@@ -525,22 +532,49 @@ less positive manner as compared to the females. We also recognized that, again,
 the male Republicans had a larger range of sentiments than the female 
 Republicans, showing that his sentiments cover a larger range of positive
 and negative sentiments when talking about Republican males. We will explore
-this question further with a Central Limit Theorem-based t-test to investigate
-if there is enough evidence to suggest that he talks, on average, more 
+this further with a Chi-squared test to see if party of the politician mentioned
+in his Tweet and sentiment are independent, and if we have enough evidence to 
+suggest that they are dependent, then we will use a t-test to see if there
+is enough evidence to suggest that he talks, on average, more 
 negatively about Democrats than Republicans. Similarly, we will also do another
-t-test to investigate if there is enough evidence to suggest that he talks, on
-average, more positively about males than females.
+Chi-squared test to investigate if gender of the politician mentioned in his
+Tweet and sentiment of the Tweet are independent, and if we have enough evidence
+to suggest that they are dependent, then we will use a t-test to see if 
+there is enough evidence to suggest that he talks, on average, more positively 
+about males than females.
 
-Figure 5 allows us to see the change in Donald Trump’s sentiments towards 
+Figure 5 shows the relative proportions of Tweets with positive, neutral and 
+negative overall sentiment that Donald Trump has shared about each of the topics
+we covered in our data set. By using a percent stacked bar plot, we could see
+the percentages side-by-side. It seems that USA had the highest proportion of
+positive Tweets, whereas Russia had the lowest proportion of positive Tweets, 
+however, we noticed that the other percentages did not appear to be drastically
+different. Upon seeing this, it prompted us to explore how his sentiment
+may have changed over time.
+
+Figure 6 allows us to see the change in Donald Trump’s sentiments towards 
 specific “hot button topics” over time. We compiled all the Tweets into 
 a line plot with time as the x-axis and average sentiment as the y-axis. By 
 taking the average sentiment of each topic by year, we were able to create this 
 visualization and see how his sentiments in his Tweets changed when discussing 
-some specific topics. To investigate this further, we will do a CLT-based
-t-test to see if there is enough evidence to sugest that the mean
+some specific topics. Sentiment scores for Tweets about each of the four topics 
+covered (immigration, guns, climate change and news) were averaged by year and 
+plotted on a line graph. This allows us to see how his sentiment towards each of 
+these subjects on Twitter has evolved over time. These four topics were chosen 
+because they have been prevalent for a long time in the political discourse of 
+the United States as opposed to something like COVID-19 or the Black Lives 
+Matter movement. This meant that we could more fully track the change in his 
+sentiment towards them over the time period of our data set. We also added a 
+horizontal red line denoting a 0 sentiment score to make it more clear where 
+his sentiments were positive and where they were negative, as well as a vertical 
+blue dashed line at the year 2016 to show how sentiments changed after his 
+election to the office of US President. To investigate this further, we will do 
+a CLT-based t-test to see if there is enough evidence to sugest that the mean
 sentiment score for Tweets on a specific topic before Trump was elected (before
 2016) is not equal to the mean sentiment score for Tweets after he was elected.
-We will do this for a few different topics.
+We will do this for the different topics shown on the visualization.
+
+
 
 \newpage 
 ```{r creatingSentimentDataset, echo=FALSE, warning=FALSE, message=FALSE}
@@ -615,6 +649,12 @@ ggplot(data=peopleData, aes(x=person, fill = factor(posNeg))) +
 Figure 3: Illustrates the proportion of Tweets with average negative (<0), 
 neutral (=0), and positive (>0) sentiment that mention a specific politician.
 
+```{r hypTestChiPeopleSentiment}
+chisq.test(table(peopleData$person, 
+                 peopleData$posNeg))
+```
+
+
 \newpage 
 ```{r partyAndGender, echo=FALSE, warning=FALSE, message=FALSE}
 peopleData <- peopleData %>% 
@@ -666,6 +706,9 @@ dems <- peopleData %>%
 repubs <- peopleData %>%
   filter(party=="Republican")
 
+chisq.test(table(peopleData$party, 
+                 peopleData$posNeg))
+
 t.test(dems$ave_sentiment, 
        repubs$ave_sentiment,
        mu = 0,
@@ -673,11 +716,15 @@ t.test(dems$ave_sentiment,
        alternative = "less",
        conf.level = 0.95)
 
+
 male <- peopleData %>%
   filter(gender=="Male")
 
 female <- peopleData %>%
   filter(gender=="Female")
+
+chisq.test(table(peopleData$gender, 
+                 peopleData$posNeg))
 
 t.test(male$ave_sentiment, 
        female$ave_sentiment,
@@ -687,7 +734,22 @@ t.test(male$ave_sentiment,
        conf.level = 0.95)
 ```
 
+```{r peopleStackedPercentage}
+topicData <- TweetsWithSentimentWithoutLink %>%
+ pivot_longer(covid:immigration, names_to = "topic", values_to = "existenceOfTopic")
 
+topicData <- topicData %>% filter(existenceOfTopic==1)
+   ggplot(data=topicData, aes(x=topic, fill = factor(posNeg))) +
+    geom_bar(position = "fill") + 
+   labs(title="Highest proportion of positive Tweets is about USA, lowest 
+        is about Russia",
+   x="Topic",y ="Percentage of Tweets", fill="Sentiment") + 
+   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+Figure 5: Illustrates the proportion of Tweets with average negative (<0), 
+neutral (=0), and positive (>0) sentiment that mention a specific topic.
+
+\newpage
 
 ```{r topicsAcrossTime, echo=FALSE, warning=FALSE, message=FALSE}
 TweetsWithSentimentDateTime <- TweetsWithSentimentWithoutLink %>%
@@ -722,7 +784,7 @@ ggplot(temp,
    geom_hline(yintercept=0, linetype="dashed", color = "red")
 ```
 
-Figure 5: Shows change of average sentiment of Tweets referring to a specific 
+Figure 6: Shows change of average sentiment of Tweets referring to a specific 
 topic across the years. Only showing a few topics, we selected the ones
 that have been Tweeted about for a long time. The vertical blue line indicates
 when Trump first became elected.
@@ -789,56 +851,16 @@ t.test(pre2016News$ave_sentiment,
        alternative = "two.sided",
        conf.level = 0.95)
 
-
-# CHI SQUARED
-
-#CLIMATE CHANGE
-prePostClimateChange <- yearVar %>%
-   filter(topic=="climateChange") %>%
-   mutate(prePost = case_when(year<2016 ~ "preElection",
-                              year>=2016  ~ "postElection"))
-
-chisq.test(table(prePostClimateChange$prePost, 
-                 prePostClimateChange$posNeg))
-#GUNS 
-prePostGuns <- yearVar %>%
-   filter(topic=="guns") %>%
-   mutate(prePost = case_when(year<2016 ~ "preElection",
-                              year>=2016  ~ "postElection"))
-
-chisq.test(table(prePostGuns$prePost, 
-                 prePostGuns$posNeg))
-
-#IMMIGRATION 
-# chi squared test to see if there is an association between whether the Tweet
-# was pre election or post election and the average sentiment score
-
-prePostImmigration <- yearVar %>%
-   filter(topic=="immigration") %>%
-   mutate(prePost = case_when(year<2016 ~ "preElection",
-                              year>=2016  ~ "postElection"))
-
-chisq.test(table(prePostImmigration$prePost, 
-                 prePostImmigration$posNeg))
-
-#NEWS
-# chi squared test to see if there is an association between whether the Tweet
-# was pre election or post election and the average sentiment score
-
-prePostNews <- yearVar %>%
-   filter(topic=="news") %>%
-   mutate(prePost = case_when(year<2016 ~ "preElection",
-                              year>=2016  ~ "postElection"))
-
-chisq.test(table(prePostNews$prePost, 
-                 prePostNews$posNeg))
-
-
-
 ```
 \newpage 
 
-### Results
+
+## Results
+ADD CHI SQUARE PEOPLE VS. SENTIMENT
+
+ADD CHI SQUARE POLITICAL PARTY VS SENTIMENT, THEN SAY SINCE THEY WERE DEPENDENT,
+WE DECIDED TO DO T TEST (WHICH IS ALREADY WRITTEN BELOW)
+
 Sentiment across political party: In order to determine if the true mean 
 sentiment score of Donald Trump's Tweets about Democratic politicians is less 
 than the mean sentiment score of Donald Trump's Tweets about Republican 
@@ -864,6 +886,10 @@ In the context of our data, this tells us that there is sufficient evidence to
 suggest that the true mean sentiment score of Donald Trump's 
 Tweets about Democratic politicians is less than the true mean sentiment score 
 of Donald Trump's Tweets about Republican politicians.
+
+
+ADD CHI SQUARE GENDER VS SENTIMENT, THEN SAY SINCE THEY WERE DEPENDENT,
+WE DECIDED TO DO T TEST (WHICH IS ALREADY WRITTEN BELOW)
 
 Sentiment across gender: In order to determine if the true mean 
 sentiment score of Donald Trump's Tweets about male politicians is greater 
@@ -891,8 +917,12 @@ suggest that the true mean sentiment score of Donald Trump's
 Tweets about male politicians is greater than the true mean sentiment score 
 of Donald Trump's Tweets about female politicians.
 
+ADD T TESTS FOR THE FOUR TOPICS THAT WE HAVE ON THE GRAPH
 
-### Sources
+## Discussion
+NEED TO ADD
+
+## Sources
 http://www.trumptwitterarchive.com/about
 
 https://www.journalism.org/2016/05/26/news-use-across-social-media-platforms-
