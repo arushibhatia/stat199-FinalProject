@@ -480,9 +480,13 @@ larger. Given the results, we can see that some of the words he most commonly
 uses are "great", "Trump", "president", "people", "country", "America", and 
 "time." While these words don’t necessarily indicate the full scope of what he 
 discusses on his Twitter account, we notice that most of his Tweets are in 
-regard to his role as the President of the United States. We believed it would 
-be interesting to see if a common theme would develop among his most common 
-words, which is partially indicated in our results. 
+regard to his role as the President of the United States. In addition, his most 
+commonly used words are quite polarizing in that he uses many positive words 
+such as “great”, “good”, “strong”, and “nice” while also using many negative 
+words such as “fake”, “false”, “bad”, and “crime”. Given the polarity of his 
+Tweets, we believed it would be interesting to see if a common theme would 
+develop among his most common words, which is partially indicated in our 
+results. 
 
 Similarly, Figure 2 is a frequency chart of his top 20 most used words in his
 Tweets. It is interesting to see how much more the word "great" is used in
