@@ -211,7 +211,6 @@ and a time variable in the 24-hour time format.
 We used the following variables in the data set to address our research 
 question:
 
-
 - text: the full text of the tweet.
 
 - obama: 1 or 0 for whether the tweet talks about Barack Obama.
